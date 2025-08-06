@@ -3,6 +3,6 @@ google-generativeai
 python-dotenv
 langchain
 PyPDF2
-# faiss-cpu
+faiss-cpu==1.7.4
 langchain-google-genai
 langchain-community>=0.0.30
