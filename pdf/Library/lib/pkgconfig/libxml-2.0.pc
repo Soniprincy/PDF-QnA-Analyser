@@ -1,0 +1,11 @@
+prefix=E:/Projects/PDF-QnA-Analyser/pdf/Library 
+exec_prefix=E:/Projects/PDF-QnA-Analyser/pdf/Library 
+libdir=E:/Projects/PDF-QnA-Analyser/pdf/Library/lib 
+includedir=E:/Projects/PDF-QnA-Analyser/pdf/Library/include 
+modules=0 
+Name: libXML 
+Version: 2.13.8 
+Description: libXML library version2. 
+Requires: 
+Libs: -LE:/Projects/PDF-QnA-Analyser/pdf/Library/lib -lxml2 -liconv -lz 
+Cflags: -IE:/Projects/PDF-QnA-Analyser/pdf/Library/include/libxml2 -IE:/Projects/PDF-QnA-Analyser/pdf/Library/include 
