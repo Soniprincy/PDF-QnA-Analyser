@@ -72,7 +72,9 @@ def user_input(user_question):
         google_api_key=GOOGLE_API_KEY  # ✅ Provide API key
     )
 
-    new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+    # new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+    new_db = Chroma.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+
     docs = new_db.similarity_search(user_question)
 
     chain = get_conversational_chain()
