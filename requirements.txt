@@ -7,15 +7,28 @@
 # langchain-google-genai
 # langchain-community>=0.0.30
 
+# --no-build-isolation
+
+# PyMuPDF==1.24.1
+# streamlit==1.35.0
+# python-dotenv==1.0.1
+# PyPDF2==3.0.1
+
+# langchain==0.1.20
+# langchain-community==0.0.38
+# langchain-google-genai==0.0.6
+# google-generativeai==0.3.2
+
+# qdrant-client==1.8.0
+
 streamlit==1.35.0
 python-dotenv==1.0.1
-PyPDF2==3.0.1
+PyMuPDF==1.24.1
 
 langchain==0.1.20
 langchain-community==0.0.38
 langchain-google-genai==0.0.6
 google-generativeai==0.3.2
-
 qdrant-client==1.8.0
 
 

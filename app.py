@@ -123,6 +123,7 @@ from qdrant_client.models import VectorParams, Distance
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
+import fitz
 
 # Load API key from .env
 load_dotenv()
@@ -132,12 +133,20 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 qdrant_client = QdrantClient(":memory:")  # In-memory; or use cloud URL
 
 # Extract text from PDF
+# def get_pdf_text(pdf_docs):
+#     text = ""
+#     for pdf in pdf_docs:
+#         pdf_reader = PdfReader(pdf)
+#         for page in pdf_reader.pages:
+#             text += page.extract_text()
+#     return text
+
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
-        pdf_reader = PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+        doc = fitz.open(stream=pdf.read(), filetype="pdf")
+        for page in doc:
+            text += page.get_text()
     return text
 
 # Split text into chunks
