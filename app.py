@@ -3,7 +3,8 @@ from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_community.vectorstores import FAISS  # Correct import from langchain_community
+# from langchain_community.vectorstores import FAISS  
+from langchain_community.vectorstores.chroma import Chroma
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
@@ -33,8 +34,10 @@ def get_vector_store(text_chunks):
         model="models/embedding-001",
         google_api_key=GOOGLE_API_KEY  # ✅ Provide API key
     )
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-    vector_store.save_local("faiss_index")
+    # vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+    vector_store = Chroma.from_texts(text_chunks, embedding=embeddings )
+    # vector_store.save_local("faiss_index")
+    Chroma(persist_directory="chroma_index", embedding_function=embeddings)
 
 # Function to set up conversational chain
 def get_conversational_chain():
