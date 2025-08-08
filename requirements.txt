@@ -21,16 +21,35 @@
 
 # qdrant-client==1.8.0
 
-streamlit==1.35.0
-python-dotenv==1.0.1
-PyMuPDF==1.24.1
+# streamlit==1.35.0
+# python-dotenv==1.0.1
+# # PyMuPDF==1.24.1
+# PyPDF2==3.0.1
 
+# langchain==0.1.20
+# langchain-community==0.0.38
+# langchain-google-genai==0.0.6
+# # google-generativeai==0.3.2
+
+# qdrant-client==1.8.0
+
+# # Pinned common dependencies to avoid pip resolver conflicts
+# # pydantic==2.7.4
+# # httpx==0.27.0
+# # protobuf==4.25.3
+# # grpcio==1.63.0
+
+
+
+streamlit==1.35.0
+google-generativeai==0.3.2
+python-dotenv==1.0.1
 langchain==0.1.20
 langchain-community==0.0.38
 langchain-google-genai==0.0.6
-google-generativeai==0.3.2
-qdrant-client==1.8.0
-
-
-
+PyPDF2==3.0.1
+faiss-cpu==1.7.4
+numpy
+tqdm
+pandas
 
