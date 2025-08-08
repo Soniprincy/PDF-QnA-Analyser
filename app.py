@@ -254,112 +254,97 @@ from langchain_community.vectorstores import FAISS
 #     main()
 
 
-
 import streamlit as st
 from PyPDF2 import PdfReader
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import os
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_community.vectorstores import Chroma
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
+import google.generativeai as genai
+import os
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Folder to store Chroma DB
-# PERSIST_DIR = "Faiss_index"
+# Directory to save FAISS index
+FAISS_INDEX_DIR = "faiss_index"
 
-# Extract text from uploaded PDFs
+# Function to get text from uploaded PDFs
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
         pdf_reader = PdfReader(pdf)
         for page in pdf_reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text
+            text += page.extract_text() or ""
     return text
 
-# Split text into chunks
+# Function to split text into chunks
 def get_text_chunks(text):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     return text_splitter.split_text(text)
 
-# Save vector store to Chroma
+# Function to save FAISS index
 def save_vector_store(text_chunks):
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
-        google_api_key=GOOGLE_API_KEY
-    )
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-    vector_store.save_local("faiss_index")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    vectorstore = FAISS.from_texts(text_chunks, embedding=embeddings)
+    vectorstore.save_local(FAISS_INDEX_DIR)
 
-# Load vector store
+# Function to load FAISS index
 def load_vector_store():
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
-        google_api_key=GOOGLE_API_KEY
-    )
-    return FAISS(persist_directory=PERSIST_DIR, embedding_function=embeddings)
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    return FAISS.load_local(FAISS_INDEX_DIR, embeddings, allow_dangerous_deserialization=True)
 
-# Create conversational chain
+# Function to create a QA chain
 def get_conversational_chain():
     prompt_template = """
-    Answer the question as detailed as possible from the provided context.
-    If the answer is not in the context, say "Answer is not available in the context".
+    Answer the question as detailed as possible from the provided context, make sure to provide all the details. 
+    If the answer is not in the provided context, just say, "The answer is not available in the context", 
+    do not provide a fabricated answer.
 
-    Context:
-    {context}
-
-    Question:
-    {question}
+    Context:\n {context} \n
+    Question: \n {question} \n
 
     Answer:
     """
-    model = ChatGoogleGenerativeAI(
-        model="models/gemini-1.5-flash-latest",
-        temperature=0.3,
-        google_api_key=GOOGLE_API_KEY
-    )
+    model = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.3)
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
     return load_qa_chain(model, chain_type="stuff", prompt=prompt)
 
-# Handle user query
-def handle_user_input(user_question):
-    db = load_vector_store()
-    docs = db.similarity_search(user_question, k=3)
+# Function to answer user queries
+def user_input(user_question):
+    vectorstore = load_vector_store()
+    docs = vectorstore.similarity_search(user_question)
     chain = get_conversational_chain()
-    response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-    st.write("### Reply:", response["output_text"])
+    response = chain(
+        {"input_documents": docs, "question": user_question}, return_only_outputs=True
+    )
+    st.write("Reply:", response["output_text"])
 
-# Streamlit app
+# Streamlit UI
 def main():
-    st.set_page_config(page_title="Chat with PDF")
-    st.header("📄 Chat with your PDF using Gemini AI")
+    st.set_page_config("Chat with PDF")
+    st.header("Chat with PDF using Google Gemini 💬")
 
-    user_question = st.text_input("Ask a question from your uploaded PDFs")
+    user_question = st.text_input("Ask a Question from the PDF Files")
 
     if user_question:
-        if os.path.exists(PERSIST_DIR):
-            handle_user_input(user_question)
-        else:
-            st.warning("Please upload and process PDFs first.")
+        user_input(user_question)
 
     with st.sidebar:
-        st.title("📂 Upload & Process PDFs")
-        pdf_docs = st.file_uploader("Upload PDF files", accept_multiple_files=True)
-        if st.button("Submit & Process"):
-            if pdf_docs:
-                with st.spinner("Processing PDFs..."):
-                    raw_text = get_pdf_text(pdf_docs)
-                    text_chunks = get_text_chunks(raw_text)
-                    save_vector_store(text_chunks)
-                st.success("✅ PDFs processed and saved!")
-            else:
-                st.error("Please upload at least one PDF.")
+        st.title("Menu:")
+        pdf_docs = st.file_uploader(
+            "Upload your PDF Files and click on 'Process'", accept_multiple_files=True
+        )
+        if st.button("Process"):
+            with st.spinner("Processing..."):
+                raw_text = get_pdf_text(pdf_docs)
+                text_chunks = get_text_chunks(raw_text)
+                save_vector_store(text_chunks)
+                st.success("Processing complete!")
 
 if __name__ == "__main__":
     main()
