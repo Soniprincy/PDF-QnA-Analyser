@@ -270,7 +270,7 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Folder to store Chroma DB
-PERSIST_DIR = "Faiss_index"
+# PERSIST_DIR = "Faiss_index"
 
 # Extract text from uploaded PDFs
 def get_pdf_text(pdf_docs):
@@ -294,8 +294,8 @@ def save_vector_store(text_chunks):
         model="models/embedding-001",
         google_api_key=GOOGLE_API_KEY
     )
-    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings, persist_directory=PERSIST_DIR)
-    vector_store.persist()
+    vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
+    vector_store.save_local("faiss_index")
 
 # Load vector store
 def load_vector_store():
